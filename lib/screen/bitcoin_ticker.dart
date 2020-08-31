@@ -7,6 +7,9 @@ class BitcoinScreen extends StatefulWidget {
 }
 
 class _BitcoinScreenState extends State<BitcoinScreen> {
+
+  String selectedCurrency = 'BDT';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +47,28 @@ class _BitcoinScreenState extends State<BitcoinScreen> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Theme.of(context).primaryColor,
-            child: null,
+            child: DropdownButton(
+              value: '$selectedCurrency',
+              items: [
+                DropdownMenuItem(
+                  child: Text('BDT'),
+                  value: 'BDT',
+                ),
+                DropdownMenuItem(
+                  child: Text('USD'),
+                  value: 'USD',
+                ),
+                DropdownMenuItem(
+                  child: Text('EUR'),
+                  value: 'EUR',
+                ),
+              ],
+              onChanged: (value){
+                setState(() {
+                  selectedCurrency = value;
+                });
+              },
+            ),
           ),
         ],
       ),
