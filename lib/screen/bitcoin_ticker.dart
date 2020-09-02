@@ -1,8 +1,9 @@
 import 'dart:io' show Platform;
 import 'package:bitcoin_ticker/model/coindata.dart';
+import 'package:bitcoin_ticker/widget/constant.dart';
+import 'package:bitcoin_ticker/widget/crypto_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 
 class BitcoinScreen extends StatefulWidget {
   @override
@@ -10,20 +11,23 @@ class BitcoinScreen extends StatefulWidget {
 }
 
 class _BitcoinScreenState extends State<BitcoinScreen> {
+  String selectedCurrency = 'AUD';
+  bool isWaiting = false;
 
-  String selectedCurrency = 'BDT';
-  String bitCoinValueInUSD = '?';
-
-  void getRate() async{
+  Map<String, String> coinValues ={};
+  void getRate() async {
+    isWaiting = true;
     try {
-      double data = await CoinData().getCoinData();
+      var data = await CoinData().getCoinData(selectedCurrency);
+      isWaiting = false;
       setState(() {
-        bitCoinValueInUSD = data.toStringAsFixed(0);
+        coinValues = data;
       });
-    }catch(e) {
+    } catch (e) {
       print(e);
     }
   }
+
   DropdownButton<String> androidDropdown() {
     List<DropdownMenuItem<String>> dropDownItems = [];
     for (String currency in currenciesList) {
@@ -39,6 +43,7 @@ class _BitcoinScreenState extends State<BitcoinScreen> {
       onChanged: (value) {
         setState(() {
           selectedCurrency = value;
+          getRate();
         });
       },
     );
@@ -56,7 +61,8 @@ class _BitcoinScreenState extends State<BitcoinScreen> {
       itemExtent: 32.0,
       onSelectedItemChanged: (value) {
         setState(() {
-          selectedCurrency = value.toString();
+          selectedCurrency = currenciesList[value];
+          getRate();
         });
       },
       children: pickerItems,
@@ -76,27 +82,46 @@ class _BitcoinScreenState extends State<BitcoinScreen> {
         title: Text('BitCoin Ticker App'),
         centerTitle: true,
       ),
+
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding( padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card( color: Colors.teal[300],
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular( 10.0 ) ),
-              child: Padding( padding: EdgeInsets.symmetric(
-                  horizontal: 24.0, vertical: 15.0 ),
-                child: Text( '1 BTC = $bitCoinValueInUSD USD', textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 20.0, color: Colors.white ), ), ), ), ),
-          Container( height: 150.0,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CryptoCard(
+                cryptoCurrency: 'BTC',
+                value: isWaiting ? '?' : coinValues['BTC'],
+                selectedCurrency: selectedCurrency,
+              ),
+              CryptoCard(
+                cryptoCurrency: 'ETH',
+                value: isWaiting ? '?' : coinValues['ETH'],
+                selectedCurrency: selectedCurrency,
+              ),
+              CryptoCard(
+                cryptoCurrency: 'LTC',
+                value: isWaiting ? '?' : coinValues['LTC'],
+                selectedCurrency: selectedCurrency,
+              ),
+              CryptoCard(
+                cryptoCurrency: 'USD',
+                value: isWaiting ? '?' : coinValues['USD'],
+                selectedCurrency: selectedCurrency,
+              ),
+            ],
+          ),
+          Spacer(),
+          Container(
+            height: 150.0,
             alignment: Alignment.center,
-            padding: EdgeInsets.only( bottom: 30.0 ),
-            color: Theme
-                .of( context )
-                .primaryColor,
-            child: Platform.isIOS ? iOSPicker( ) : androidDropdown( ), ),
-        ], ), );
+            padding: EdgeInsets.only(bottom: 30.0),
+            color: Theme.of(context).primaryColor,
+            child: Platform.isIOS ? iOSPicker() : androidDropdown(),
+          ),
+        ],
+      ),
+    );
   }
 }
